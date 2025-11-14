@@ -1,0 +1,1 @@
+powershell -executionpolicy unrestricted -file "%~dp0internals\installer.ps1"

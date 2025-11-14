@@ -1,0 +1,3 @@
+set LOCALAPPDATA=%USERPROFILE%\AppData\Local
+set TEMP=%LOCALAPPDATA%\Temp
+set TMP=%TEMP%
