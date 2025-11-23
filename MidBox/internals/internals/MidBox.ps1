@@ -154,7 +154,7 @@ for(){
     Clear-Host
     $sandboxes=Get-LocalGroupMember "MidBox sandboxes"
     Write-Host @"
-MidBox v1.0.0 (doesn't update automatically) | Made by Meterel at https://github.com/Meterel/MidBox
+MidBox v1.1.0 (doesn't update automatically) | Made by Meterel at https://github.com/Meterel/MidBox
 
 Sandboxes ($($sandboxes.Count)):
 "@
@@ -286,6 +286,7 @@ Write 'YES' to continue
             "7"{
                 $user=Read-Host "Sandbox name?"
                 New-LocalUser $user -NoPassword | Add-LocalGroupMember "MidBox sandboxes"
+                Set-LocalUser $user -PasswordNeverExpires $true
 
                 init_sandbox $user
                 create_shortcut -admin "powershell" ([Environment]::GetFolderPath("Desktop")+"\Run in $user.lnk") "-executionpolicy unrestricted -file ""$env:ProgramFiles\MidBox\program\MidBox.ps1"" -RunIn ""$user"""
@@ -387,13 +388,34 @@ Write 'YES' to continue
             }
 
             "13"{
-                $user=(Read-Host "Username?" | Get-LocalUser).Name
-                if($user -eq $env:USERNAME){
+                $user=Read-Host "Username?" | Get-LocalUser
+                if($user.Name -eq $env:USERNAME){
                     throw "The current logged in user can't be converted"
                 }
+                if(-not $user.Enabled){
+                    throw "Disabled users can't be converted"
+                }
+                if(Get-LocalGroupMember -ErrorAction SilentlyContinue "MidBox sandboxes" $user){
+                    throw "$user is already a sandbox"
+                }
 
-                Remove-LocalGroupMember Users $user
+                $groups=Get-LocalGroup | Where-Object {$_.Name -notin @("Users","Administrators") -and "$env:COMPUTERNAME\$user" -in (Get-LocalGroupMember $_).Name}
+                if($groups){
+                    $x=Read-Host @"
+WARNING! The user is in the following groups: $($groups -join ", ")
+They may grant the user extra priviledges, if unsure, remove them
+Remove or keep the user in the groups? (remove/keep)
+"@
+                    if($x -eq "keep"){
+                        $groups=@()
+                    }elseif($x -ne "remove"){
+                        break
+                    }
+                }
+
+                Remove-LocalGroupMember -ErrorAction SilentlyContinue Users $user #-ErrorAction SilentlyContinue because the user created at windows install isn't in Users
                 Remove-LocalGroupMember -ErrorAction SilentlyContinue Administrators $user
+                $groups | ForEach-Object {Remove-LocalGroupMember $_ $user}
                 Add-LocalGroupMember "MidBox sandboxes" $user
                 init_sandbox $user
                 create_shortcut -admin "powershell" ([Environment]::GetFolderPath("Desktop")+"\Run in $user.lnk") "-executionpolicy unrestricted -file ""$env:ProgramFiles\MidBox\program\MidBox.ps1"" -RunIn ""$user"""
