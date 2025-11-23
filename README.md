@@ -3,6 +3,8 @@ A lightweight (less than a megabyte) sandbox for Windows built mainly with Power
 
 MidBox = LowBox (AppContainer's original name) + medium integrity level like access to the filesystem and other resources (with limitations)
 
+[Click here to go to the download page](https://github.com/Meterel/MidBox/releases/latest)
+
 ## Requirements
 
 Supported architectures: x86, x64
