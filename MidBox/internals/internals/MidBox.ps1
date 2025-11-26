@@ -37,12 +37,26 @@ function run_in{
     $pass=ConvertTo-SecureString -AsPlainText -Force ([System.Web.Security.Membership]::GeneratePassword(24,0)) #16 bytes of entropy on base64
     Set-LocalUser $user -Password $pass
 
-    Start-Process -Credential ([pscredential]::new($user,$pass)) -LoadUserProfile $program $arg -Wait:$Wait -PassThru:$PassThru
+    $pi=[System.Diagnostics.Process]::Start((New-Object System.Diagnostics.ProcessStartInfo $program,$arg -Property @{
+        CreateNoWindow=$true; #reduce attack surface for example from a custom console and it's config
+        UserName=$user;
+        Password=$pass;
+        LoadUserProfile=$true;
+        UseShellExecute=$false #legacy solution: is true on powershell 5 and must be false if run as user
+    }))
+
     Set-LocalUser $user -Password ([securestring]::new())
+
+    if($Wait){
+        $pi.WaitForExit()
+    }
+    if($PassThru){
+        $pi
+    }
 }
 
 if($RunIn){
-    run_in (get_sandbox $RunIn) powershell "-executionpolicy","unrestricted","-file","""$PSScriptRoot\internals\run_in_appcontainer.ps1""","""powershell -executionpolicy unrestricted -windowstyle hidden -file \""$PSScriptRoot\internals\file_picker.ps1\"""""
+    run_in (get_sandbox $RunIn) powershell "-executionpolicy","unrestricted","-NoProfile","-file","""$PSScriptRoot\internals\run_in_appcontainer.ps1""","""powershell -executionpolicy unrestricted -windowstyle hidden -file \""$PSScriptRoot\internals\file_picker.ps1\"""""
     exit
 }
 
@@ -112,7 +126,7 @@ function init_sandbox{
         [switch]$revert
     )
 
-    $arg="-executionpolicy","unrestricted","-windowstyle","hidden","-file","""$PSScriptRoot\internals\init_sandbox.ps1"""
+    $arg="-executionpolicy","unrestricted","-NoProfile","-file","""$PSScriptRoot\internals\init_sandbox.ps1"""
     if($revert){
         $arg+="-revert"
     }
@@ -154,7 +168,7 @@ for(){
     Clear-Host
     $sandboxes=Get-LocalGroupMember "MidBox sandboxes"
     Write-Host @"
-MidBox v1.1.0 (doesn't update automatically) | Made by Meterel at https://github.com/Meterel/MidBox
+MidBox v$version (doesn't update automatically) | Made by Meterel at https://github.com/Meterel/MidBox
 
 Sandboxes ($($sandboxes.Count)):
 "@
@@ -184,7 +198,7 @@ Sandboxes ($($sandboxes.Count)):
     try{
         switch($s){
             "1"{
-                run_in (get_sandbox) powershell "-executionpolicy","unrestricted","-file","""$PSScriptRoot\internals\run_in_appcontainer.ps1""","""powershell -executionpolicy unrestricted -windowstyle hidden -file \""$PSScriptRoot\internals\file_picker.ps1\"""""
+                run_in (get_sandbox) powershell "-executionpolicy","unrestricted","-NoProfile","-file","""$PSScriptRoot\internals\run_in_appcontainer.ps1""","""powershell -executionpolicy unrestricted -windowstyle hidden -file \""$PSScriptRoot\internals\file_picker.ps1\"""""
                 exit
             }
 
@@ -249,7 +263,7 @@ Write 'YES' to continue
                     break
                 }
 
-                run_in $user powershell "-executionpolicy","unrestricted","-windowstyle","hidden","-file","""$PSScriptRoot\internals\file_picker.ps1"""
+                run_in $user powershell "-executionpolicy","unrestricted","-NoProfile","-file","""$PSScriptRoot\internals\file_picker.ps1"""
                 exit
             }
 

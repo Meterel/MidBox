@@ -3,8 +3,8 @@ param(
 )
 $ErrorActionPreference="stop"
 trap{
-    Write-Error -ErrorAction Continue $_
-    Pause
+    Add-Type -AssemblyName PresentationFramework
+    [System.Windows.MessageBox]::Show($_,$MyInvocation.MyCommand,"OK","Error") | Out-Null
 }
 
 #according to https://learn.microsoft.com/en-us/dotnet/standard/native-interop/type-marshalling win32's BOOL (4 bytes) can be marshalled into a bool (1 byte)
@@ -245,7 +245,7 @@ Add-Type @"
 [Helper]::runInAppcontainer(
     [Win32]::CreateRestrictedToken([Win32]::OpenProcessToken([Win32]::GetCurrentProcess(),8 -bor 2 -bor 128 <# flags TOKEN_QUERY | TOKEN_DUPLICATE | TOKEN_ADJUST_DEFAULT #>),1 <# flag DISABLE_MAX_PRIVILEGE #>,0,0,0,0,0,0),
     [Win32]::CreateAppContainerProfile("Meterel.MidBox.AppContainer","Meterel.MidBox.AppContainer","Meterel.MidBox.AppContainer",0,0),
-    (Get-Content -ErrorAction SilentlyContinue $env:ProgramFiles\MidBox\data\sandboxes\$env:USERNAME\capabilities.txt | Where-Object {$_ -match "^\s*(\w+)"} | ForEach-Object {[Win32]::DeriveCapabilitySidsFromName($Matches[1])}),
+    (Get-Content -ErrorAction SilentlyContinue "$([Environment]::GetFolderPath("ProgramFiles"))\MidBox\data\sandboxes\$([Environment]::UserName)\capabilities.txt" | Where-Object {$_ -match "^\s*(\w+)"} | ForEach-Object {[Win32]::DeriveCapabilitySidsFromName($Matches[1])}),
     $cmd
 )
 

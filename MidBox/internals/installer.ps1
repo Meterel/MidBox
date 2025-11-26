@@ -18,10 +18,12 @@ New-Item $reg_uninst | Out-Null
 Set-ItemProperty $reg_uninst UninstallString "powershell -executionpolicy unrestricted -file ""$env:ProgramFiles\MidBox\program\internals\uninstall.ps1"""
 Set-ItemProperty $reg_uninst DisplayName MidBox
 Set-ItemProperty $reg_uninst Publisher Meterel
+Set-ItemProperty $reg_uninst URLInfoAbout "https://github.com/Meterel/MidBox"
 
 New-LocalGroup -ErrorAction SilentlyContinue "MidBox sandboxes" | Out-Null
 
 . $PSScriptRoot\internals\internals\shared.ps1
+Set-ItemProperty $reg_uninst DisplayVersion $version
 set_perms $objects
 
 create_shortcut -admin "powershell" ([Environment]::GetFolderPath("Desktop")+"\MidBox.lnk") "-executionpolicy unrestricted -file ""$env:ProgramFiles\MidBox\program\MidBox.ps1"""

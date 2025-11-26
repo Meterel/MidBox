@@ -2,10 +2,14 @@ param(
     [switch]$revert
 )
 $ErrorActionPreference="stop"
+trap{
+    Add-Type -AssemblyName PresentationFramework
+    [System.Windows.MessageBox]::Show($_,$MyInvocation.MyCommand,"OK","Error") | Out-Null
+}
 . $PSScriptRoot\shared.ps1
 
 $rule=[System.Security.AccessControl.RegistryAccessRule]::new($appcontainer_rule.IdentityReference,$appcontainer_rule.FileSystemRights.ToString(),$appcontainer_rule.InheritanceFlags,$appcontainer_rule.PropagationFlags,$appcontainer_rule.AccessControlType)
-foreach($x in Get-Acl ((Get-ChildItem -Recurse -Force HKCU:\ | Where-Object Name -NotLike "*\AppContainer*" | Resolve-Path)+"Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\")){
+foreach($x in (Get-ChildItem -Recurse -Force HKCU:\ | Where-Object Name -NotLike "*\AppContainer*")+(Get-Item HKCU:\) | Resolve-Path | Get-Acl){
     if($true -notin $x.Access.IsInherited){
         if($revert){
             $x.RemoveAccessRuleAll($rule)
@@ -14,7 +18,6 @@ foreach($x in Get-Acl ((Get-ChildItem -Recurse -Force HKCU:\ | Where-Object Name
         }
 
         Set-Acl -ErrorAction Continue $x.Path $x
-        Write-Host $x.Path
     }
 }
 

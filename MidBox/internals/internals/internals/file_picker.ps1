@@ -1,4 +1,9 @@
+$ErrorActionPreference="stop"
 Add-Type -AssemblyName System.Windows.Forms
+trap{
+    [System.Windows.Forms.MessageBox]::Show($_,$MyInvocation.MyCommand,"OK","Error") | Out-Null
+}
+
 
 $picker=[System.Windows.Forms.OpenFileDialog]::new()
 $picker.InitialDirectory=[Environment]::GetFolderPath("Desktop")
