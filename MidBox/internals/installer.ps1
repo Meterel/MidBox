@@ -10,7 +10,7 @@ if(-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentit
 
 
 Remove-Item -ErrorAction SilentlyContinue -Recurse $env:ProgramFiles\MidBox\program
-Copy-Item -Recurse $PSScriptRoot\internals $env:ProgramFiles\MidBox\program
+Copy-Item -Recurse -PassThru $PSScriptRoot\internals $env:ProgramFiles\MidBox\program | Unblock-File #scripts are blocked if downloaded from the internet
 
 $reg_uninst="HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MidBox"
 Remove-Item -ErrorAction SilentlyContinue -Recurse $reg_uninst

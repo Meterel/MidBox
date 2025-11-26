@@ -56,7 +56,7 @@ function run_in{
 }
 
 if($RunIn){
-    run_in (get_sandbox $RunIn) powershell "-executionpolicy","unrestricted","-NoProfile","-file","""$PSScriptRoot\internals\run_in_appcontainer.ps1""","""powershell -executionpolicy unrestricted -windowstyle hidden -file \""$PSScriptRoot\internals\file_picker.ps1\"""""
+    run_in (get_sandbox $RunIn) powershell "-executionpolicy","unrestricted","-NoProfile","-NonInteractive","-file","""$PSScriptRoot\internals\run_in_appcontainer.ps1""","""powershell -executionpolicy unrestricted -NonInteractive -windowstyle hidden -file \""$PSScriptRoot\internals\file_picker.ps1\"""""
     exit
 }
 
@@ -126,7 +126,7 @@ function init_sandbox{
         [switch]$revert
     )
 
-    $arg="-executionpolicy","unrestricted","-NoProfile","-file","""$PSScriptRoot\internals\init_sandbox.ps1"""
+    $arg="-executionpolicy","unrestricted","-NoProfile","-NonInteractive","-file","""$PSScriptRoot\internals\init_sandbox.ps1"""
     if($revert){
         $arg+="-revert"
     }
@@ -198,7 +198,7 @@ Sandboxes ($($sandboxes.Count)):
     try{
         switch($s){
             "1"{
-                run_in (get_sandbox) powershell "-executionpolicy","unrestricted","-NoProfile","-file","""$PSScriptRoot\internals\run_in_appcontainer.ps1""","""powershell -executionpolicy unrestricted -windowstyle hidden -file \""$PSScriptRoot\internals\file_picker.ps1\"""""
+                run_in (get_sandbox) powershell "-executionpolicy","unrestricted","-NoProfile","-NonInteractive","-file","""$PSScriptRoot\internals\run_in_appcontainer.ps1""","""powershell -executionpolicy unrestricted -NonInteractive -windowstyle hidden -file \""$PSScriptRoot\internals\file_picker.ps1\"""""
                 exit
             }
 
@@ -263,7 +263,7 @@ Write 'YES' to continue
                     break
                 }
 
-                run_in $user powershell "-executionpolicy","unrestricted","-NoProfile","-file","""$PSScriptRoot\internals\file_picker.ps1"""
+                run_in $user powershell "-executionpolicy","unrestricted","-NoProfile","-NonInteractive","-file","""$PSScriptRoot\internals\file_picker.ps1"""
                 exit
             }
 
