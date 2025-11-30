@@ -392,7 +392,6 @@ Write 'YES' to continue
                 init_sandbox $user -revert
                 Remove-Item -ErrorAction SilentlyContinue -Recurse $env:ProgramFiles\MidBox\data\sandboxes\$user
                 Remove-Item -ErrorAction SilentlyContinue ([Environment]::GetFolderPath("Desktop")+"\Run in $user.lnk")
-                Set-LocalUser $user -Password ([securestring]::new())
                 Remove-LocalGroupMember "MidBox sandboxes" $user
                 Add-LocalGroupMember -ErrorAction SilentlyContinue Users $user
 

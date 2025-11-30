@@ -73,7 +73,8 @@ PCWSTR globalToLocalPipe(PCWSTR path) {
 	const WCHAR local[] = L"LOCAL\\";
 	const auto local_len = ARRAYSIZE(local) - 1;
 
-	if (wcsncmp(path, pipe, pipe_len) || !wcsncmp(path + pipe_len, local, local_len)) return path;
+	//check for NULL because hooked funcs may return an error gracefully
+	if (!path || wcsncmp(path, pipe, pipe_len) || !wcsncmp(path + pipe_len, local, local_len)) return path;
 
 	const auto newPath = new WCHAR[wcslen(path) + local_len + 1];
 #pragma warning(push)
@@ -115,6 +116,15 @@ NTSTATUS WINAPI RtlDosPathNameToRelativeNtPathName_U_WithStatus_wrapper(PCWSTR D
 	const auto newPath = globalToLocalPipe(DosFileName);
 	const auto r = RtlDosPathNameToRelativeNtPathName_U_WithStatus_original(newPath, NtFileName, FilePart, RelativeName);
 	if (newPath != DosFileName) delete[] newPath;
+	return r;
+}
+
+//only named pipe func that doesn't convert the path internally
+BOOL(WINAPI* WaitNamedPipeW_original)(LPCWSTR, DWORD);
+BOOL WINAPI WaitNamedPipeW_wrapper(LPCWSTR lpNamedPipeName, DWORD nTimeOut) {
+	const auto newPath = globalToLocalPipe(lpNamedPipeName);
+	const auto r = WaitNamedPipeW_original(newPath, nTimeOut);
+	if (newPath != lpNamedPipeName) delete[] newPath;
 	return r;
 }
 
@@ -196,6 +206,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	check(RtlDosPathNameToNtPathName_U_WithStatus_original = (NTSTATUS(WINAPI*)(PCWSTR, PUNICODE_STRING, PWSTR*, void*))GetProcAddress(ntdll, "RtlDosPathNameToNtPathName_U_WithStatus"));
 	check(RtlDosPathNameToRelativeNtPathName_U_original = (BOOLEAN(WINAPI*)(PCWSTR, PUNICODE_STRING, PWSTR*, void*))GetProcAddress(ntdll, "RtlDosPathNameToRelativeNtPathName_U"));
 	check(RtlDosPathNameToRelativeNtPathName_U_WithStatus_original = (NTSTATUS(WINAPI*)(PCWSTR, PUNICODE_STRING, PWSTR*, void*))GetProcAddress(ntdll, "RtlDosPathNameToRelativeNtPathName_U_WithStatus"));
+	check(WaitNamedPipeW_original = (BOOL(WINAPI*)(LPCWSTR, DWORD))GetProcAddress(kernelbase, "WaitNamedPipeW"));
 
 	check(CreateProcessInternalW_original = (BOOL(WINAPI*)(HANDLE, LPCWSTR, LPWSTR, LPSECURITY_ATTRIBUTES, LPSECURITY_ATTRIBUTES, BOOL, DWORD, LPVOID, LPCWSTR, LPSTARTUPINFOW, LPPROCESS_INFORMATION, OPTIONAL PHANDLE))GetProcAddress(kernelbase, "CreateProcessInternalW"));
 
@@ -211,6 +222,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	DetourAttach(&(void*&)RtlDosPathNameToNtPathName_U_WithStatus_original, RtlDosPathNameToNtPathName_U_WithStatus_wrapper);
 	DetourAttach(&(void*&)RtlDosPathNameToRelativeNtPathName_U_original, RtlDosPathNameToRelativeNtPathName_U_wrapper);
 	DetourAttach(&(void*&)RtlDosPathNameToRelativeNtPathName_U_WithStatus_original, RtlDosPathNameToRelativeNtPathName_U_WithStatus_wrapper);
+	DetourAttach(&(void*&)WaitNamedPipeW_original, WaitNamedPipeW_wrapper);
 
 	DetourAttach(&(void*&)CreateProcessInternalW_original, CreateProcessInternalW_wrapper);
 
