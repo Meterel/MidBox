@@ -83,7 +83,7 @@ Add-Type @"
         public static WTS_SESSION_INFOW[] WTSEnumerateSessions(IntPtr hServer,uint Reserved,uint Version){
             IntPtr ptr;
             uint count;
-            if(!_WTSEnumerateSessionsW(hServer,Reserved,Version,out ptr,out count)) throw new Exception(MethodBase.GetCurrentMethod().Name+" error "+Marshal.GetLastWin32Error().ToString());
+            if(!_WTSEnumerateSessionsW(hServer,Reserved,Version,out ptr,out count)) throw new Exception(MethodBase.GetCurrentMethod().Name+" error "+Marshal.GetLastWin32Error());
 
             var r=new WTS_SESSION_INFOW[count];
             for(int i=0;i<count;i++) r[i]=Marshal.PtrToStructure<WTS_SESSION_INFOW>(ptr+i*Marshal.SizeOf(typeof(WTS_SESSION_INFOW)));
@@ -97,7 +97,7 @@ Add-Type @"
         public static string WTSQuerySessionInformation(IntPtr hServer,uint SessionId,int WTSInfoClass){
             IntPtr x;
             uint y;
-            if(!_WTSQuerySessionInformationW(hServer,SessionId,WTSInfoClass,out x,out y)) throw new Exception(MethodBase.GetCurrentMethod().Name+" error "+Marshal.GetLastWin32Error().ToString());
+            if(!_WTSQuerySessionInformationW(hServer,SessionId,WTSInfoClass,out x,out y)) throw new Exception(MethodBase.GetCurrentMethod().Name+" error "+Marshal.GetLastWin32Error());
 
             var r=Marshal.PtrToStringUni(x);
 
@@ -108,14 +108,14 @@ Add-Type @"
         [DllImport("Wtsapi32.dll",EntryPoint="WTSLogoffSession",SetLastError=true)]
         static extern bool _WTSLogoffSession(IntPtr hServer,uint SessionId,bool bWait);
         public static void WTSLogoffSession(IntPtr hServer,uint SessionId,bool bWait){
-            if(!_WTSLogoffSession(hServer,SessionId,bWait)) throw new Exception(MethodBase.GetCurrentMethod().Name+" error "+Marshal.GetLastWin32Error().ToString());
+            if(!_WTSLogoffSession(hServer,SessionId,bWait)) throw new Exception(MethodBase.GetCurrentMethod().Name+" error "+Marshal.GetLastWin32Error());
         }
 
 
         [DllImport("Userenv.dll",CharSet=CharSet.Unicode,SetLastError=true,EntryPoint="DeleteProfileW")]
         static extern bool _DeleteProfileW(string lpSidString,IntPtr lpProfilePath,IntPtr lpComputerName);
         public static void DeleteProfile(string lpSidString){
-            if(!_DeleteProfileW(lpSidString,(IntPtr)0,(IntPtr)0)) throw new Exception(MethodBase.GetCurrentMethod().Name+" error "+Marshal.GetLastWin32Error().ToString());
+            if(!_DeleteProfileW(lpSidString,(IntPtr)0,(IntPtr)0)) throw new Exception(MethodBase.GetCurrentMethod().Name+" error "+Marshal.GetLastWin32Error());
         }
     }
 "@

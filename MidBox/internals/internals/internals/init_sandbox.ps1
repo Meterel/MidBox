@@ -40,7 +40,7 @@ if($revert){
             [DllImport("Userenv.dll",CharSet=CharSet.Unicode,SetLastError=true,EntryPoint="DeleteAppContainerProfile")]
             static extern int _DeleteAppContainerProfile(string pszAppContainerName);
             public static void DeleteAppContainerProfile(string pszAppContainerName){
-                if(_DeleteAppContainerProfile(pszAppContainerName)!=0) throw new Exception(MethodBase.GetCurrentMethod().Name+" error "+Marshal.GetLastWin32Error().ToString());
+                if(_DeleteAppContainerProfile(pszAppContainerName)!=0) throw new Exception(MethodBase.GetCurrentMethod().Name+" error "+Marshal.GetLastWin32Error());
             }
         }
 "@

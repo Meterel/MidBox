@@ -43,14 +43,14 @@ int APIENTRY WinMain(
 	const auto handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, StrToIntA(lpCmdLine));
 	check(handle);
 
-	const auto dllAddr = VirtualAllocEx(handle, NULL, dllSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-	check(dllAddr);
-	check(WriteProcessMemory(handle, dllAddr, dll, dllSize, NULL));
+	const auto remoteAddr = VirtualAllocEx(handle, NULL, dllSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	check(remoteAddr);
+	check(WriteProcessMemory(handle, remoteAddr, dll, dllSize, NULL));
 
-	const auto thread = CreateRemoteThread(handle, NULL, NULL, (LPTHREAD_START_ROUTINE)LoadLibraryW_addr, dllAddr, NULL, NULL);
+	const auto thread = CreateRemoteThread(handle, NULL, NULL, (LPTHREAD_START_ROUTINE)LoadLibraryW_addr, remoteAddr, NULL, NULL);
 	check(thread);
 
 	WaitForSingleObject(thread, INFINITE);
-	check(VirtualFreeEx(handle, dllAddr, 0, MEM_RELEASE));
+	check(VirtualFreeEx(handle, remoteAddr, 0, MEM_RELEASE));
 	return 1;
 }
