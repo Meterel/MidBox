@@ -11,5 +11,5 @@ $picker.Title="Run in $env:USERNAME"
 $picker.ShowDialog() | Out-Null
 
 if($picker.FileName){
-    Start-Process -WorkingDirectory (Split-Path $picker.FileName -Parent) $picker.FileName
+    (New-Object -ComObject "Shell.Application").ShellExecute($picker.FileName,"",(Split-Path $picker.FileName -Parent)) #same behavior as explorer, prompting when a file is network blocked instead of throwing
 }

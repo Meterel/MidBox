@@ -1,4 +1,4 @@
-$version="1.2.0"
+$version="1.2.1"
 
 $appcontainer_rule=[System.Security.AccessControl.FileSystemAccessRule]::new([System.Security.Principal.SecurityIdentifier]::new("S-1-15-2-1388956366-2258462785-1159399181-844480566-995560047-3502612569-1338837068"),"FullControl","ContainerInherit,ObjectInherit","None","Allow")
 $group_rule=[System.Security.AccessControl.FileSystemAccessRule]::new((Get-LocalGroup "MidBox sandboxes").SID,"Write,Delete,DeleteSubdirectoriesAndFiles,ChangePermissions,TakeOwnership","ContainerInherit,ObjectInherit","None","Deny")
